@@ -16,8 +16,8 @@ Docs: http://localhost:8080/swagger-ui.html
 
 ## Layout
    api/     controllers, DTOs, exception handler
-   domain/  Store, Coordinates, Haversine, NearestStoreFinder, exceptions(domain related)
-   data/    StoreRepository (port) + JsonStoreRepository
+   domain/  Store, Coordinates, Haversine, NearestStoreFinder, StoreRepository (port), exceptions(domain related)
+   data/    JsonStoreRepository (adapter implementing the port)
 
 ## Rules
 - you can not guss, Ask questions.
