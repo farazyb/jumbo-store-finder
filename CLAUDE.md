@@ -3,7 +3,7 @@
 Find the Jumbo stores closest to a given position, so a customer can
 decide where to shop or collect an order.
 
-Backend service: returns the N Jumbo stores nearest a given lat/lon
+Backend service: returns the 5 Jumbo stores nearest a given lat/lon
 
 ## Commands
 
