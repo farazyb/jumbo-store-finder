@@ -20,7 +20,7 @@ Docs: http://localhost:8080/swagger-ui.html
    data/    JsonStoreRepository (adapter implementing the port)
 
 ## Rules
-- you can not guss, Ask questions.
+- you can not guess, Ask questions.
 - Keep it simple, do not over engineering.
 - domain/ imports nothing from Spring or Jackson. Keep it framework-free.
 - Store data is immutable and loaded once at startup. Fail fast if absent.
