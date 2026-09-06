@@ -7,7 +7,7 @@ collect an order.
 
 Two ways. Pick whichever is easier for you.
 
-### Option 1: Maven, if you have JDK 17
+### Option 1: Maven, if you have JDK 17 or newer
 
 Nothing to build, no Docker needed.
 
