@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,7 +76,7 @@ public class JsonStoreRepository implements StoreRepository {
                 loaded.add(toStore(record));
             } catch (RuntimeException unusable) {
                 skipped++;
-                log.warn("Skipped store record {}: {}", record.uuid(), unusable.getMessage());
+                log.warn("Skipped store record {}: {}", record.uuid(), reasonOf(unusable));
             }
         }
 
@@ -91,8 +92,8 @@ public class JsonStoreRepository implements StoreRepository {
     private static Store toStore(StoreRecord record) {
         return new Store(
                 record.uuid(),
-                new Coordinates(Double.parseDouble(record.latitude()),
-                        Double.parseDouble(record.longitude())),
+                new Coordinates(parseCoordinate(record.latitude(), "latitude"),
+                        parseCoordinate(record.longitude(), "longitude")),
                 new Address(record.addressName(), record.street(), record.street2(),
                         blankToNull(record.street3()), record.postalCode(), record.city()),
                 toOpeningHours(record.todayOpen(), record.todayClose()),
@@ -105,7 +106,38 @@ public class JsonStoreRepository implements StoreRepository {
         if (CLOSED_ALL_DAY.equals(todayOpen) || CLOSED_ALL_DAY.equals(todayClose)) {
             return OpeningHours.closedAllDay();
         }
-        return new OpeningHours(LocalTime.parse(todayOpen), LocalTime.parse(todayClose));
+        return new OpeningHours(parseTime(todayOpen, "todayOpen"), parseTime(todayClose, "todayClose"));
+    }
+
+    // The JDK's own parse failures name neither the field nor, for a null, anything useful:
+    // LocalTime.parse(null) reports only "text". These say which field and what was in it.
+
+    private static double parseCoordinate(String value, String field) {
+        if (value == null) {
+            throw new IllegalArgumentException(field + " is missing");
+        }
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException notANumber) {
+            throw new IllegalArgumentException(field + " is not a number: " + value);
+        }
+    }
+
+    private static LocalTime parseTime(String value, String field) {
+        if (value == null) {
+            throw new IllegalArgumentException(field + " is missing");
+        }
+        try {
+            return LocalTime.parse(value);
+        } catch (DateTimeParseException notATime) {
+            throw new IllegalArgumentException(field + " is not a time: " + value);
+        }
+    }
+
+    /** Some exceptions carry no message at all, and "null" in the log helps nobody. */
+    private static String reasonOf(RuntimeException unusable) {
+        String message = unusable.getMessage();
+        return message == null || message.isBlank() ? unusable.getClass().getSimpleName() : message;
     }
 
     private static String blankToNull(String value) {
