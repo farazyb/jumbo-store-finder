@@ -3,6 +3,6 @@ services:
     build: .
     image: store-finder:latest
     ports:
-      - "8080:8080"
+      - "${PORT:-8080}:8080"
     volumes:
       - ./logs:/app/logs
