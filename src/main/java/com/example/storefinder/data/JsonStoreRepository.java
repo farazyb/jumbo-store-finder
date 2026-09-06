@@ -4,7 +4,6 @@ import com.example.storefinder.domain.Address;
 import com.example.storefinder.domain.Coordinates;
 import com.example.storefinder.domain.OpeningHours;
 import com.example.storefinder.domain.Store;
-import com.example.storefinder.domain.StoreFinderException;
 import com.example.storefinder.domain.StoreRepository;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,8 +27,8 @@ import java.util.List;
  * use the literal "Gesloten" for a store closed all day, {@code collectionPoint} is absent rather
  * than false, and {@code street3} is always blank. Everything downstream sees only domain types.
  *
- * <p>If the file is missing, unreadable or holds no stores, construction fails and the
- * application does not start.
+ * <p>A record that cannot be read is skipped and logged, so one bad row does not cost the other
+ * 586. Construction fails only when the file is missing, unparseable, or leaves nothing to serve.
  */
 @Component
 public class JsonStoreRepository implements StoreRepository {
@@ -55,43 +54,51 @@ public class JsonStoreRepository implements StoreRepository {
     private static List<Store> load(ResourceLoader resourceLoader, String location) {
         Resource resource = resourceLoader.getResource(location);
         if (!resource.exists()) {
-            throw new StoreFinderException("No store data found at " + location);
+            throw new StoreDataException("Store data file not found: " + location);
         }
 
         StoresFile storesFile;
         try (InputStream contents = resource.getInputStream()) {
             storesFile = new ObjectMapper().readValue(contents, StoresFile.class);
         } catch (IOException unreadable) {
-            throw new StoreFinderException("Store data at " + location + " could not be read", unreadable);
+            throw new StoreDataException("Store data file could not be parsed: " + location, unreadable);
         }
 
-        if (storesFile == null || storesFile.stores() == null || storesFile.stores().isEmpty()) {
-            throw new StoreFinderException("Store data at " + location + " holds no stores");
+        List<StoreRecord> records = storesFile == null || storesFile.stores() == null
+                ? List.of()
+                : storesFile.stores();
+
+        List<Store> loaded = new ArrayList<>(records.size());
+        int skipped = 0;
+        for (StoreRecord record : records) {
+            try {
+                loaded.add(toStore(record));
+            } catch (RuntimeException unusable) {
+                skipped++;
+                log.warn("Skipped store record {}: {}", record.uuid(), unusable.getMessage());
+            }
         }
 
-        List<Store> loaded = new ArrayList<>(storesFile.stores().size());
-        for (StoreRecord record : storesFile.stores()) {
-            loaded.add(toStore(record));
+        if (loaded.isEmpty()) {
+            throw new StoreDataException("Store data file contains no usable stores: " + location);
+        }
+        if (skipped > 0) {
+            log.warn("Skipped {} of {} store records", skipped, records.size());
         }
         return List.copyOf(loaded);
     }
 
     private static Store toStore(StoreRecord record) {
-        try {
-            return new Store(
-                    record.uuid(),
-                    new Coordinates(Double.parseDouble(record.latitude()),
-                            Double.parseDouble(record.longitude())),
-                    new Address(record.addressName(), record.street(), record.street2(),
-                            blankToNull(record.street3()), record.postalCode(), record.city()),
-                    toOpeningHours(record.todayOpen(), record.todayClose()),
-                    record.locationType(),
-                    // Absent on the 213 supermarkets that are not collection points.
-                    Boolean.TRUE.equals(record.collectionPoint()));
-        } catch (RuntimeException unusable) {
-            log.error("Cannot parse store record {}: {}", record.uuid(), unusable.getMessage());
-            throw new StoreFinderException("Store data holds a record that cannot be read", unusable);
-        }
+        return new Store(
+                record.uuid(),
+                new Coordinates(Double.parseDouble(record.latitude()),
+                        Double.parseDouble(record.longitude())),
+                new Address(record.addressName(), record.street(), record.street2(),
+                        blankToNull(record.street3()), record.postalCode(), record.city()),
+                toOpeningHours(record.todayOpen(), record.todayClose()),
+                record.locationType(),
+                // Absent on the 213 supermarkets that are not collection points.
+                Boolean.TRUE.equals(record.collectionPoint()));
     }
 
     private static OpeningHours toOpeningHours(String todayOpen, String todayClose) {

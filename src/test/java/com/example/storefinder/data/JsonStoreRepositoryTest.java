@@ -1,7 +1,6 @@
 package com.example.storefinder.data;
 
 import com.example.storefinder.domain.Store;
-import com.example.storefinder.domain.StoreFinderException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -69,12 +68,27 @@ class JsonStoreRepositoryTest {
     }
 
     @Test
+    @DisplayName("skips a record it cannot read and keeps the rest")
+    void skipsRecordItCannotReadAndKeepsTheRest() {
+        // GIVEN a file holding one usable record and one with an out-of-range longitude
+
+        // WHEN the repository is built from it
+        List<Store> stores = new JsonStoreRepository(RESOURCE_LOADER,
+                "classpath:partly-broken-stores.json").findAll();
+
+        // THEN the good record is served and only the bad one is dropped: one unreadable row
+        // must not cost the whole file
+        assertEquals(1, stores.size());
+        assertEquals("usable-record", stores.get(0).uuid());
+    }
+
+    @Test
     @DisplayName("refuses to start when the file is missing")
     void refusesToStartWhenTheFileIsMissing() {
         // GIVEN a location that points at no file
 
         // WHEN the repository is built from it
-        StoreFinderException thrown = assertThrows(StoreFinderException.class,
+        StoreDataException thrown = assertThrows(StoreDataException.class,
                 () -> new JsonStoreRepository(RESOURCE_LOADER, "classpath:no-such-file.json"));
 
         // THEN it fails immediately, so the application cannot come up without its data
@@ -87,7 +101,7 @@ class JsonStoreRepositoryTest {
         // GIVEN a file that exists but is empty
 
         // WHEN the repository is built from it
-        StoreFinderException thrown = assertThrows(StoreFinderException.class,
+        StoreDataException thrown = assertThrows(StoreDataException.class,
                 () -> new JsonStoreRepository(RESOURCE_LOADER, "classpath:empty-stores.json"));
 
         // THEN an existing but useless file is treated the same as a missing one

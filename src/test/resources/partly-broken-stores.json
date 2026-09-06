@@ -1,0 +1,38 @@
+{
+  "stores": [
+    {
+      "city": "Amsterdam",
+      "postalCode": "1073 AV",
+      "street": "Stadhouderskade",
+      "street2": "93",
+      "street3": "",
+      "addressName": "Jumbo Amsterdam Stadhouderskade",
+      "uuid": "usable-record",
+      "longitude": "4.895801",
+      "latitude": "52.357579",
+      "complexNumber": "30001",
+      "showWarningMessage": true,
+      "todayOpen": "08:00",
+      "locationType": "Supermarkt",
+      "sapStoreID": "1001",
+      "todayClose": "22:00"
+    },
+    {
+      "city": "Nowhere",
+      "postalCode": "0000 XX",
+      "street": "Broken Street",
+      "street2": "1",
+      "street3": "",
+      "addressName": "Jumbo Nowhere",
+      "uuid": "longitude-out-of-range",
+      "longitude": "999.0",
+      "latitude": "52.0",
+      "complexNumber": "30002",
+      "showWarningMessage": true,
+      "todayOpen": "08:00",
+      "locationType": "Supermarkt",
+      "sapStoreID": "1002",
+      "todayClose": "20:00"
+    }
+  ]
+}

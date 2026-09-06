@@ -39,6 +39,7 @@ Docs: http://localhost:8080/swagger-ui.html
 - collectionPoint is absent, not false, on 213 records.
 - lat/lon are strings, not numbers
 - Only today's hours exist — no weekly schedule
+- A record that cannot be read is skipped and logged; the file is rejected only when no usable record remains.
 
 ##LOGGING
 - request's coordinates can not be in the log file(security reason). Never log the query string or the full request URI.
