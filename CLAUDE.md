@@ -41,14 +41,14 @@ Docs: http://localhost:8080/swagger-ui.html
 - Only today's hours exist — no weekly schedule
 - A record that cannot be read is skipped and logged; the file is rejected only when no usable record remains.
 
-##LOGGING
+## LOGGING
 - request's coordinates can not be in the log file(security reason). Never log the query string or the full request URI.
 - Log one line per request: method, path, status, duration. Nothing about the work in between.
 - Log the cause, not just that something failed: include the record UUID.
 - Use parameterised logging.
 
 
-##Tests
+## Tests
 - use Junit
 - do not use mockito , use fake lambda
 - test must be written in GIVEN,WHEN,THEN style.
@@ -56,7 +56,7 @@ Docs: http://localhost:8080/swagger-ui.html
 - use Parameterized when you want to test method multiple times with different arguments.
 
 
-##STOP AND REPORTING
+## STOP AND REPORTING
 - when you done with the Unit of work , one logic you have to stop and report the changes .
 
 
