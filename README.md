@@ -119,3 +119,5 @@ On Windows, `mvnw.cmd verify`.
   code.
 - 30m designing the architecture.
 - 45m planning.
+- 2h implementation,validation, code review.
+
