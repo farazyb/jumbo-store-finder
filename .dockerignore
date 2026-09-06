@@ -1,0 +1,9 @@
+target/
+logs/
+.git/
+.github/
+.idea/
+.claude/
+*.iml
+README.md
+CLAUDE.md

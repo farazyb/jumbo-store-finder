@@ -1,1 +1,6 @@
-services: { }
+services:
+  store-finder:
+    build: .
+    image: store-finder:latest
+    ports:
+      - "8080:8080"

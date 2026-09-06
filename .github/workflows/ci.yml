@@ -13,3 +13,26 @@ jobs:
           distribution: temurin
           cache: maven
       - run: ./mvnw --batch-mode --no-transfer-progress verify
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the image
+        run: docker build -t store-finder:ci .
+
+      - name: Start a container from it
+        run: docker run -d --name store-finder -p 8080:8080 store-finder:ci
+
+      - name: Wait for the application to report healthy
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl -fs http://localhost:8080/actuator/health > /dev/null; then
+              echo "healthy after ~$((attempt * 2))s"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs store-finder
+          exit 1
