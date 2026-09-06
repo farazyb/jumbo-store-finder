@@ -41,8 +41,8 @@ Docs: http://localhost:8080/swagger-ui.html
 - Only today's hours exist — no weekly schedule
 
 ##LOGGING
-- request's coordinates can not be in the log file(security reason), Only log when the request faced with exception.
-- Never log per-request in the happy path.
+- request's coordinates can not be in the log file(security reason). Never log the query string or the full request URI.
+- Log one line per request: method, path, status, duration. Nothing about the work in between.
 - Log the cause, not just that something failed: include the record UUID.
 - Use parameterised logging.
 
