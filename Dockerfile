@@ -20,12 +20,16 @@ FROM eclipse-temurin:17-jre AS runtime
 
 WORKDIR /app
 
-# Run as a non-root user rather than root.
-RUN useradd --system --uid 1001 --create-home appuser
+# Run as a non-root user rather than root. /app is created by WORKDIR as root, so hand it over
+# before switching user: otherwise the application cannot create its log directory.
+RUN useradd --system --uid 1001 --create-home appuser \
+ && mkdir -p /app/logs \
+ && chown -R appuser:appuser /app
 USER appuser
 
 COPY --from=build /build/target/store-finder-*.jar app.jar
 
+VOLUME ["/app/logs"]
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
