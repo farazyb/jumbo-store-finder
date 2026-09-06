@@ -1,3 +1,6 @@
 spring:
   application:
     name: store-finder
+  mvc:
+    problemdetails:
+      enabled: true
