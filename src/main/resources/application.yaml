@@ -11,6 +11,11 @@ logging:
   structured:
     format:
       file: ecs
+    json:
+      exclude:
+        - process
+        - service
+        - ecs
 
 management:
   endpoints:
